@@ -11,9 +11,9 @@
 // e.g. /example/FeatureServer/0/query
 const provider = {
   type: 'provider',
-  name: 'example',
+  name: 'bigquery',
   hosts: false, // if true, also adds disableIdParam
-  disableIdParam: true, // if true, adds to path and req.params
+  disableIdParam: false, // if true, adds to path and req.params
   Controller: require('./controller'),
   Model: require('./model'),
   routes: require('./routes'),

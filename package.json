@@ -11,6 +11,7 @@
     "test": "standard && tape test/*.js | tap-spec"
   },
   "dependencies": {
+    "@google-cloud/bigquery": "^5.5.0",
     "config": "^3.2.5",
     "koop": "^3.17.0",
     "request": "^2.88.0"

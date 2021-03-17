@@ -1,4 +1,4 @@
-# Koop Provider Example
+# Koop BigQuery Provider
 
 [![Build Status](https://travis-ci.org/koopjs/koop-provider-example.svg?branch=master)](https://travis-ci.org/koopjs/koop-provider-example) [![Greenkeeper badge](https://badges.greenkeeper.io/koopjs/koop-provider-example.svg)](https://greenkeeper.io/)
 

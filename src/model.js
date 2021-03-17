@@ -3,12 +3,14 @@
 
   This file is required. It must export a class with at least one public function called `getData`
 
-  Documentation: http://koopjs.github.io/docs/usage/provider
-*/
-const request = require('request').defaults({ gzip: true, json: true })
+  Documentation: http://koopjs.github.io/docs/usage/provider */
+//const request = require('request').defaults({ gzip: true, json: true })
 const config = require('config')
+const { BigQuery } = require('@google-cloud/bigquery');
+const bigquery = new BigQuery();
 
-function Model (koop) {}
+
+function Model(koop) { }
 
 // Public function to return data from the
 // Return: GeoJSON FeatureCollection
@@ -21,93 +23,103 @@ function Model (koop) {}
 // req.params.id  (if index.js:disableIdParam false)
 // req.params.layer
 // req.params.method
-Model.prototype.getData = function (req, callback) {
-  const key = config.trimet.key
+Model.prototype.getData = async function (req, callback) {
+  const splitPath = req.params.id.split('.')
+  const dataset = splitPath[0]
+  const table = splitPath[1]
+  let spatialCol = null
 
-  // Call the remote API with our developer key
-  request(`https://developer.trimet.org/ws/v2/vehicles/onRouteOnly/false/appid/${key}`, (err, res, body) => {
-    if (err) return callback(err)
+  if (!table) callback(new Error('The "id" parameter must be in the form of "dataset.table"')) //thanks Dan O'Neill
+  if (!req.params.method) callback(new Error('Method not specified'))
+  if (req.params.method.toLowerCase() !== "query") callback(new Error(`Method ${req.params.method} not supported`))
 
-    // translate the response into geojson
-    const geojson = translate(body)
+  let err = null;
+  process.env.GOOGLE_CLOUD_PROJECT = config.gcloud.project;
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = "./gcloud/serviceKey.json";
 
-    // Optional: cache data for 10 seconds at a time by setting the ttl or "Time to Live"
-    // geojson.ttl = 10
+  async function doQuery() {
+    // Queries the view to get stops along the route.
+    spatialCol = await getSpatialColumn(dataset, table);
+    if (!spatialCol) throw new Error("Specified table has no spatial column")
+    console.log(spatialCol)
+    const query = `SELECT st_asgeojson(${spatialCol})as ${config.gcloud.geometry},  * EXCEPT(${spatialCol}) FROM \`${dataset}.${table}\``;
+    console.log(query);
+    // For all options, see https://cloud.google.com/bigquery/docs/reference/rest/v2/jobs/query
+    const options = {
+      query: query,
+      // Location must match that of the dataset(s) referenced in the query.
+      location: 'US',
+    };
 
-    // Optional: Service metadata and geometry type
-    // geojson.metadata = {
-    //   name: 'Koop Sample Provider',
-    //   description: `Generated from ${url}`,
-    //   geometryType: 'Polygon' // Default is automatic detection in Koop
-    // }
+    // Run the query as a job
+    const [job] = await bigquery.createQueryJob(options);
+    console.log(`Job ${job.id}started.`);
 
-    // hand off the data to Koop
-    callback(null, geojson)
-  })
+    // Wait for the query to finish
+    const [rows] = await job.getQueryResults();
+
+    // return the results
+    return rows;
+  }
+  // [END bigquery_query]
+
+  // translate the response into geojson
+    try {
+      const geojson = translate(await doQuery())
+      // hand off the data to Koop
+      callback(null, geojson)
+    }
+    catch (e) {
+      callback(e)
+    }
 }
 
-function translate (input) {
+function translate(input) {
+  //console.log(input);
   return {
     type: 'FeatureCollection',
-    features: input.resultSet.vehicle.map(formatFeature)
+    features: input.map(formatFeature)
   }
 }
 
-function formatFeature (inputFeature) {
-  // Most of what we need to do here is extract the longitude and latitude
+function formatFeature(inputFeature) {
+  // get geometry
+  let shapeVal = JSON.parse(inputFeature[config.gcloud.geometry])
+  //remove geometry from attributes
+  delete inputFeature[config.gcloud.geometry]
+  //still need to process BigQuery dates
   const feature = {
     type: 'Feature',
     properties: inputFeature,
-    geometry: {
-      type: 'Point',
-      coordinates: [inputFeature.longitude, inputFeature.latitude]
-    }
+    geometry: shapeVal
   }
-  // But we also want to translate a few of the date fields so they are easier to use downstream
-  const dateFields = ['expires', 'serviceDate', 'time']
-  dateFields.forEach(field => {
-    feature.properties[field] = new Date(feature.properties[field]).toISOString()
-  })
   return feature
 }
 
+//Function to determin the name of the spatial column for a table.
+//Queries information schema. If the table has multiple spatial columns, only the first one is used.
+//TODO: use Koop layer parameter as a selector for spatial column
+async function getSpatialColumn(dataset, table){
+  const query = `SELECT column_name FROM ${dataset}.INFORMATION_SCHEMA.COLUMNS where data_type = 'GEOGRAPHY' and table_name = '${table}';`
+  console.log(query)
+  const options = {
+    query: query,
+    // Location must match that of the dataset(s) referenced in the query.
+    location: 'US',
+  };
+  const [job] = await bigquery.createQueryJob(options);
+  console.log(`Job ${job.id}started.`);
+
+  // Wait for the query to finish
+  const [rows] = await job.getQueryResults();
+  console.log(rows)
+  if (rows.length > 0) {
+    return rows[0].column_name
+  }
+  else{
+    return null;
+  }
+
+}
+
 module.exports = Model
-
-/* Example provider API:
-   - needs to be converted to GeoJSON Feature Collection
-{
-  "resultSet": {
-  "queryTime": 1488465776220,
-  "vehicle": [
-    {
-      "tripID": "7144393",
-      "signMessage": "Red Line to Beaverton",
-      "expires": 1488466246000,
-      "serviceDate": 1488441600000,
-      "time": 1488465767051,
-      "latitude": 45.5873117,
-      "longitude": -122.5927705,
-    }
-  ]
-}
-
-Converted to GeoJSON:
-
-{
-  "type": "FeatureCollection",
-  "features": [
-    "type": "Feature",
-    "properties": {
-      "tripID": "7144393",
-      "signMessage": "Red Line to Beaverton",
-      "expires": "2017-03-02T14:50:46.000Z",
-      "serviceDate": "2017-03-02T08:00:00.000Z",
-      "time": "2017-03-02T14:42:47.051Z",
-    },
-    "geometry": {
-      "type": "Point",
-      "coordinates": [-122.5927705, 45.5873117]
-    }
-  ]
-}
-*/
