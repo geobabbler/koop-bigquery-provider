@@ -32,7 +32,7 @@ Run server:
 - `npm start`
 
 Example API Query:
-- `curl http://localhost:8080/bigquery/rest/services/${dataset}.{table}/FeatureServer/0/query`
+- `curl http://localhost:8080/bigquery/rest/services/${dataset}.${table}/FeatureServer/0/query`
 
 Tests:
 - `npm test`
