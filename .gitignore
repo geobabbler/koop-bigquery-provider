@@ -1,3 +1,4 @@
 node_modules
 *.log
 serviceKey.json
+default.json

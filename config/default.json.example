@@ -1,0 +1,7 @@
+{
+  "gcloud": {
+    "project": "my-bigquery-project",
+    "geometry": "shape",
+    "dataset": "my_dataset"
+  }
+}

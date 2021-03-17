@@ -1,13 +1,8 @@
 # Koop BigQuery Provider
 
-[![Build Status](https://travis-ci.org/koopjs/koop-provider-example.svg?branch=master)](https://travis-ci.org/koopjs/koop-provider-example) [![Greenkeeper badge](https://badges.greenkeeper.io/koopjs/koop-provider-example.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/geobabbler/koop-bigquery-provider.svg?branch=master)](https://travis-ci.org/koopjs/koop-provider-example) [![Greenkeeper badge](https://badges.greenkeeper.io/koopjs/koop-provider-example.svg)](https://greenkeeper.io/)
 
 
-This is an example that demonstrates how to build a Koop Provider. You can clone this project, and use it to start a new provider. This sample can run a local server, deploy to AWS Lambda or Docker for testing and operations. Once the provider is published to NPM, then it can be used with other Koop providers and outputs in a larger project.
-
-The data source in this example is the [TriMet Bus API](https://developer.trimet.org). You can see this provider in action [here](http://dcdev.maps.arcgis.com/home/item.html?id=2603e7e3f10742f78093edf8ea2adfd8#visualize).
-
-Full documentation is provided [here](https://koopjs.github.io/docs/usage/provider).
 
 ## Getting started
 
@@ -37,7 +32,7 @@ Run server:
 - `npm start`
 
 Example API Query:
-- `curl localhost:8080/example/FeatureServer/0/query?returnCountOnly=true`
+- `curl http://localhost:8080/bigquery/rest/services/${dataset}.{table}/FeatureServer/0/query`
 
 Tests:
 - `npm test`
