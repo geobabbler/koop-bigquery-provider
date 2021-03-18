@@ -1,7 +1,7 @@
 {
-  "name": "koop-provider-sample",
+  "name": "koop-bigquery-provider",
   "version": "1.0.0",
-  "description": "A sample provider for koop",
+  "description": "A Koop provider for BigQuery",
   "main": "src/index.js",
   "directories": {
     "test": "test"
@@ -16,7 +16,7 @@
     "koop": "^3.17.0",
     "request": "^2.88.0"
   },
-  "author": "Daniel Fenton",
+  "author": "Bill Dollins",
   "license": "Apache-2.0",
   "devDependencies": {
     "@koopjs/cli": "^0.6.0",
@@ -27,15 +27,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/koopjs/koop-provider-sample.git"
+    "url": "git+https://github.com/geobabbler/koop-bigquery-provider.git"
   },
   "bugs": {
-    "url": "https://github.com/koopjs/koop-provider-sample/issues"
+    "url": "https://github.com/geobabbler/koop-bigquery-provider/issues"
   },
-  "homepage": "https://github.com/koopjs/koop-provider-sample",
+  "homepage": "https://github.com/geobabbler/koop-bigquery-provider",
   "keywords": [
     "koop",
     "provider",
-    "sample"
+    "bigquery"
   ]
 }
