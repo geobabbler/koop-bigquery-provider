@@ -1,6 +1,8 @@
 # Koop BigQuery Provider
 
-[![Build Status](https://travis-ci.org/geobabbler/koop-bigquery-provider.svg?branch=master)](https://travis-ci.org/koopjs/koop-provider-example) [![Greenkeeper badge](https://badges.greenkeeper.io/koopjs/koop-provider-example.svg)](https://greenkeeper.io/)
+This provider uses a service account for BigQuery authentication. Places your service account JSON file in the "gloud" directory and update the GOOGLE_APPLICATION_CREDENTIALS in `src/model.js`.
+
+In order to work with BigQuery, you should address the prerequisites listed in the "Before You Begin" section [here](https://github.com/googleapis/nodejs-bigquery#quickstart).
 
 
 
