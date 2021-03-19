@@ -90,6 +90,10 @@ function formatFeature (inputFeature) {
   // remove geometry from attributes
   delete inputFeature[config.gcloud.geometry]
   // still need to process BigQuery dates
+  for (const item in inputFeature) {
+    // console.log(item)
+    if (inputFeature[item].value) inputFeature[item] = inputFeature[item].value
+  }
   const feature = {
     type: 'Feature',
     properties: inputFeature,
