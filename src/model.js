@@ -29,11 +29,11 @@ Model.prototype.getData = async function (req, callback) {
   let spatialCol = null
 
   // pre-flight checks
-  //if (!req.params.layer) callback(new Error('Layer not specified'))
-  //if (isNaN(parseInt(req.params.layer, 10))) callback(new Error('Layer must be an integer'))
+  // if (!req.params.layer) callback(new Error('Layer not specified'))
+  // if (isNaN(parseInt(req.params.layer, 10))) callback(new Error('Layer must be an integer'))
   if (!table) callback(new Error('The "id" parameter must be in the form of "dataset.table"')) // thanks Dan O'Neill
-  //if (!req.params.method) callback(new Error('Method not specified'))
-  //if (req.params.method.toLowerCase() !== 'query') callback(new Error(`Method ${req.params.method} not supported`))
+  // if (!req.params.method) callback(new Error('Method not specified'))
+  // if (req.params.method.toLowerCase() !== 'query') callback(new Error(`Method ${req.params.method} not supported`))
 
   const layerNum = parseInt(req.params.layer, 10)
   process.env.GOOGLE_CLOUD_PROJECT = config.gcloud.project
