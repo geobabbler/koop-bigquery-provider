@@ -5,6 +5,7 @@
 
   Documentation: http://koopjs.github.io/docs/usage/provider */
 // const request = require('request').defaults({ gzip: true, json: true })
+const _ = require('lodash')
 const config = require('config')
 const { BigQuery } = require('@google-cloud/bigquery')
 const bigquery = new BigQuery()
@@ -38,6 +39,7 @@ Model.prototype.getData = async function (req, callback) {
   const layerNum = parseInt(req.params.layer, 10)
   process.env.GOOGLE_CLOUD_PROJECT = config.gcloud.project
   process.env.GOOGLE_APPLICATION_CREDENTIALS = './gcloud/serviceKey.json'
+  const id = process.env.PG_OBJECTID || 'gid'
 
   async function doQuery () {
     // Queries the view to get stops along the route.
@@ -45,7 +47,7 @@ Model.prototype.getData = async function (req, callback) {
     if (!spatialCol) throw new Error('Specified table has no spatial column')
     if (spatialCol === '-999') throw new Error('Specified layer does not exist')
     console.log(spatialCol)
-    const query = `SELECT st_asgeojson(${spatialCol})as ${config.gcloud.geometry},  * EXCEPT(${spatialCol}) FROM \`${dataset}.${table}\``
+    const query = `SELECT st_asgeojson(${spatialCol})as ${config.gcloud.geometry},  * EXCEPT(${spatialCol}), ROW_NUMBER() OVER() AS gid FROM \`${dataset}.${table}\``
     console.log(query)
     // For all options, see https://cloud.google.com/bigquery/docs/reference/rest/v2/jobs/query
     const options = {
@@ -69,6 +71,14 @@ Model.prototype.getData = async function (req, callback) {
   // translate the response into geojson
   try {
     const geojson = translate(await doQuery())
+    if (geojson.metadata === undefined || geojson.metadata === null) {
+      geojson.metadata = {}
+    }
+
+    geojson.metadata.title = geojson.metadata.name = dataset
+    geojson.metadata.description = 'GeoJSON from PostGIS ' + dataset + '.' + table
+    geojson.metadata.idField = id
+    geojson.metadata.geometryType = _.get(geojson, 'features[0].geometry.type')
     // hand off the data to Koop
     callback(null, geojson)
   } catch (e) {
