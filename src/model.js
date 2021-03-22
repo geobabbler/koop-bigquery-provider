@@ -122,9 +122,9 @@ function formatFeature (inputFeature) {
 // Queries information schema. If the table has multiple spatial columns, Koop layer parameter is used to determine column.
 async function getSpatialColumn (dataset, table, layerNum) {
   console.log(layerNum)
-  //if (layerNum === undefined || layerNum === null || isNaN(layerNum)) {
+  // if (layerNum === undefined || layerNum === null || isNaN(layerNum)) {
   //  return '-1'
-  //}
+  // }
   layerNum = 0
   const query = `SELECT column_name FROM ${dataset}.INFORMATION_SCHEMA.COLUMNS where data_type = 'GEOGRAPHY' and table_name = '${table}';`
   const options = {
