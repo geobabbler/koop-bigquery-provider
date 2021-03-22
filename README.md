@@ -6,8 +6,7 @@ In order to work with BigQuery, you should address the prerequisites listed in t
 
 This provider uses a service account for BigQuery authentication. Rename your service account JSON file to 'serviceKey.json' and place it in the "gcloud" directory. 
 
-![ArcGIS Pro](./assets/arcgis_pro_koop_bigquery.png =300x)
-
+<img src="./assets/arcgis_pro_koop_bigquery.png" width="300">
 
 ## Configuration
 
