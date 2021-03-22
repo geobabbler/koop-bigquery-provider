@@ -2,6 +2,6 @@
   "gcloud": {
     "project": "",
     "geometry": "shape",
-    "dataset": ""
+    "region": "US"
   }
 }

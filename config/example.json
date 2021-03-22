@@ -1,7 +1,7 @@
 {
   "gcloud": {
-    "project": "my-bigquery-project",
+    "project": "",
     "geometry": "shape",
-    "dataset": "my_dataset"
+    "region": "US"
   }
 }
