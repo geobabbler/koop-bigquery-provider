@@ -5,7 +5,7 @@
 
   Documentation: http://koopjs.github.io/docs/usage/provider */
 // const request = require('request').defaults({ gzip: true, json: true })
-const _ = require('lodash')
+// const _ = require('lodash')
 const config = require('config')
 const { BigQuery } = require('@google-cloud/bigquery')
 const bigquery = new BigQuery()
@@ -45,6 +45,7 @@ Model.prototype.getData = async function (req, callback) {
     // Queries the view to get stops along the route.
     spatialCol = await getSpatialColumn(dataset, table, layerNum)
     if (!spatialCol) throw new Error('Specified table has no spatial column')
+    if (spatialCol === '-1') return {}
     if (spatialCol === '-999') throw new Error('Specified layer does not exist')
     console.log(spatialCol)
     const query = `SELECT st_asgeojson(${spatialCol})as ${config.gcloud.geometry},  * EXCEPT(${spatialCol}), ROW_NUMBER() OVER() AS gid FROM \`${dataset}.${table}\``
@@ -78,19 +79,24 @@ Model.prototype.getData = async function (req, callback) {
     geojson.metadata.title = geojson.metadata.name = dataset
     geojson.metadata.description = 'GeoJSON from PostGIS ' + dataset + '.' + table
     geojson.metadata.idField = id
-    geojson.metadata.geometryType = _.get(geojson, 'features[0].geometry.type')
+    // geojson.metadata.geometryType = _.get(geojson, 'features[0].geometry.type')
     // hand off the data to Koop
     callback(null, geojson)
   } catch (e) {
+    console.log(e)
     callback(e)
   }
 }
 
 function translate (input) {
+  let feats = []
+  if (input.map) {
+    feats = input.map(formatFeature)
+  }
   // console.log(input);
   return {
     type: 'FeatureCollection',
-    features: input.map(formatFeature)
+    features: feats
   }
 }
 
@@ -115,6 +121,10 @@ function formatFeature (inputFeature) {
 // Function to determin the name of the spatial column for a table.
 // Queries information schema. If the table has multiple spatial columns, Koop layer parameter is used to determine column.
 async function getSpatialColumn (dataset, table, layerNum) {
+  console.log(layerNum)
+  if (layerNum === undefined || layerNum === null || isNaN(layerNum)) {
+    return '-1'
+  }
   const query = `SELECT column_name FROM ${dataset}.INFORMATION_SCHEMA.COLUMNS where data_type = 'GEOGRAPHY' and table_name = '${table}';`
   const options = {
     query: query,
