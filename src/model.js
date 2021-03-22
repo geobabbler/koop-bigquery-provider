@@ -5,7 +5,7 @@
 
   Documentation: http://koopjs.github.io/docs/usage/provider */
 // const request = require('request').defaults({ gzip: true, json: true })
-// const _ = require('lodash')
+const _ = require('lodash')
 const config = require('config')
 const { BigQuery } = require('@google-cloud/bigquery')
 const bigquery = new BigQuery()
@@ -76,10 +76,10 @@ Model.prototype.getData = async function (req, callback) {
       geojson.metadata = {}
     }
 
-    geojson.metadata.title = geojson.metadata.name = dataset
+    geojson.metadata.title = geojson.metadata.name = dataset + '.' + table
     geojson.metadata.description = 'GeoJSON from PostGIS ' + dataset + '.' + table
     geojson.metadata.idField = id
-    // geojson.metadata.geometryType = _.get(geojson, 'features[0].geometry.type')
+    geojson.metadata.geometryType = _.get(geojson, 'features[0].geometry.type')
     // hand off the data to Koop
     callback(null, geojson)
   } catch (e) {
@@ -122,9 +122,10 @@ function formatFeature (inputFeature) {
 // Queries information schema. If the table has multiple spatial columns, Koop layer parameter is used to determine column.
 async function getSpatialColumn (dataset, table, layerNum) {
   console.log(layerNum)
-  if (layerNum === undefined || layerNum === null || isNaN(layerNum)) {
-    return '-1'
-  }
+  //if (layerNum === undefined || layerNum === null || isNaN(layerNum)) {
+  //  return '-1'
+  //}
+  layerNum = 0
   const query = `SELECT column_name FROM ${dataset}.INFORMATION_SCHEMA.COLUMNS where data_type = 'GEOGRAPHY' and table_name = '${table}';`
   const options = {
     query: query,
